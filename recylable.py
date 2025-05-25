@@ -8,12 +8,20 @@ screen = pygame.display.set_mode((900,700))
 
 winorlose = "start"
 reyclablelist = ["C:/Pygame2/images/item1.png","C:/Pygame2/images/pencil.png","C:/Pygame2/images/box.png"]
+score = 0
+clock = pygame.time.Clock()
+
+starttime = time.time()
 
 def bgchange(winorlose):
     if winorlose == "start":
         bg = pygame.image.load("C:/Pygame2/images/background,eco.png")
         bg = pygame.transform.scale(bg,(900,700))
         screen.blit(bg,(0,0))
+    if winorlose == "win":
+        screen.fill("green")
+    if winorlose == "lose":
+        screen.fill("red")
     
 class Bin(pygame.sprite.Sprite):
     def __init__(self):
@@ -70,24 +78,52 @@ for i in range(25):
     allsprites.add(item)
     nonrecyclablegroup.add(item)
 
-
-
+font = pygame.font.SysFont("Calibri",25)
+timerfont = pygame.font.SysFont("Ariel",25)
+winorlosefont = pygame.font.SysFont("Impact",60)
+scoredisplayed = font.render("Score: "+str(score),True,(0,0,0))
+screen.blit(scoredisplayed,(20,20))
 
 run = True
 while run:
-    
-
+    clock.tick(60)
+    timeelapsed = time.time() - starttime
+    if timeelapsed >= 60:
+        if score > 40:
+            msg = winorlosefont.render("YOU WIN",True,(0,0,0))
+            winorlose = "win"
+            screen.blit(msg,(450,350))            
+            pygame.display.update()
+        if score < 40:
+            msg = winorlosefont.render("YOU LOSE",True,(0,0,0))
+            winorlose = "lose"
+            screen.blit(msg,(450,350))
+            pygame.display.update()
+    else:
+        msg1 = timerfont.render("Time left: "+str(60-int(timeelapsed)),True,(0,0,0))
+        screen.blit(msg1,(20,50))
+        pygame.display.update()
+        print(msg1)    
     bgchange(winorlose)
     allsprites.draw(screen)
     bin.Draw()
-
-
+    scoredisplayed = font.render("Score"+str(score),True,(0,0,0))
+    screen.blit(scoredisplayed,(20,20))
     
-
+    recyclablehitlist = pygame.sprite.spritecollide(bin,recylclablegroup,True)
+    nonrecyclablehitlist = pygame.sprite.spritecollide(bin,nonrecyclablegroup,True)
+    for i in recyclablehitlist:
+        score = score + 2
+        scoredisplayed = font.render("Score"+str(score),True,(0,0,0))
+    for i in nonrecyclablehitlist:
+        score = score - 5
+        scoredisplayed = font.render("Score"+str(score),True,(0,0,0))
+    screen.blit(scoredisplayed,(20,20))
 
     for event in pygame.event.get():
         if event.type == QUIT:
             quit()
 
-
+    if winorlose == "win" or winorlose == "lose":
+        pygame.sprite.Sprite.kill(allsprites)
     pygame.display.flip()
